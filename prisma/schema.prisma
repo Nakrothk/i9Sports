@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model Cliente {
+  id             String    @id @default(cuid())
+  nome           String
+  dataNascimento DateTime? @db.Date
+  email          String?
+  telefone       String?
+  endereco       String?
+  mensalista     Boolean   @default(false)
+  observacoes    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  reservas       Reserva[]
+  comandas       Comanda[]
+}
+
+model Quadra {
+  id       String          @id @default(cuid())
+  nome     String
+  ativa    Boolean         @default(true)
+  coberta  Boolean         @default(false)
+  reservas Reserva[]
+  aulas    AulaProfessor[]
+}
+
+model Professor {
+  id        String          @id @default(cuid())
+  nome      String
+  categoria String          @default("Beach Tennis")
+  ativo     Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  aulas     AulaProfessor[]
+}
+
+model AulaProfessor {
+  id          String    @id @default(cuid())
+  professorId String
+  quadraId    String
+  diaSemana   Int
+  horario     String
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  quadra      Quadra    @relation(fields: [quadraId], references: [id])
+
+  @@unique([quadraId, diaSemana, horario])
+}
+
+model Reserva {
+  id                String   @id @default(cuid())
+  nomeCliente       String
+  telefone          String?
+  quadraId          String
+  clienteId         String?
+  data              DateTime @db.Date
+  horario           String
+  observacoes       String?
+  recorrente        Boolean  @default(false)
+  grupoRecorrencia  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  quadra            Quadra   @relation(fields: [quadraId], references: [id])
+  cliente           Cliente? @relation(fields: [clienteId], references: [id])
+
+  @@unique([quadraId, data, horario])
+}
+
+model Produto {
+  id        String             @id @default(cuid())
+  nome      String
+  preco     Decimal            @db.Decimal(10, 2)
+  categoria CategoriaProduto?
+  ativo     Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  itens     ItemComanda[]
+}
+
+enum CategoriaProduto {
+  BEBIDA
+  COMIDA
+  SERVICO
+  OUTRO
+}
+
+model Comanda {
+  id          String        @id @default(cuid())
+  nomeCliente String
+  telefone    String?
+  clienteId   String?
+  status      StatusComanda @default(ABERTA)
+  total       Decimal       @default(0) @db.Decimal(10, 2)
+  observacoes String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  itens       ItemComanda[]
+  cliente     Cliente?      @relation(fields: [clienteId], references: [id])
+}
+
+model ItemComanda {
+  id         String   @id @default(cuid())
+  comandaId  String
+  produtoId  String
+  quantidade Int
+  precoUnit  Decimal  @db.Decimal(10, 2)
+  createdAt  DateTime @default(now())
+  comanda    Comanda  @relation(fields: [comandaId], references: [id], onDelete: Cascade)
+  produto    Produto  @relation(fields: [produtoId], references: [id])
+}
+
+model Torneio {
+  id          String             @id @default(cuid())
+  nome        String
+  descricao   String?
+  data        DateTime?          @db.Date
+  local       String?
+  valor       Decimal?           @db.Decimal(10, 2)
+  pixChave    String?
+  pixTipo     String?
+  status      StatusTorneio      @default(ABERTO)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  categorias  CategoriaTorneio[]
+  inscricoes  InscricaoTorneio[]
+}
+
+model CategoriaTorneio {
+  id         String             @id @default(cuid())
+  torneioId  String
+  nome       String
+  vagas      Int
+  torneio    Torneio            @relation(fields: [torneioId], references: [id], onDelete: Cascade)
+  inscricoes InscricaoTorneio[]
+}
+
+model InscricaoTorneio {
+  id               String           @id @default(cuid())
+  torneioId        String
+  categoriaId      String
+  nomeJogador      String
+  telefoneJogador  String?
+  nomeParceiro     String
+  telefoneParceiro String?
+  status           StatusInscricao  @default(PENDENTE)
+  pixCorrelationId String?
+  pixBrCode        String?
+  pixQrCodeUrl     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  torneio          Torneio          @relation(fields: [torneioId], references: [id], onDelete: Cascade)
+  categoria        CategoriaTorneio @relation(fields: [categoriaId], references: [id])
+}
+
+enum StatusTorneio {
+  ABERTO
+  ENCERRADO
+}
+
+enum StatusInscricao {
+  PENDENTE
+  CONFIRMADA
+  CANCELADA
+}
+
+enum StatusComanda {
+  ABERTA
+  FECHADA
+}
