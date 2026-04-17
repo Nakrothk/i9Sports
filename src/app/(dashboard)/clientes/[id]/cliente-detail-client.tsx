@@ -23,7 +23,7 @@ type Comanda = { id: string; nomeCliente: string; status: 'ABERTA' | 'FECHADA'; 
 type Reserva = { id: string; nomeCliente: string; quadraId: string; data: string; horario: string; observacoes: string | null; quadra: { id: string; nome: string } }
 type Cliente = {
   id: string; nome: string; dataNascimento: string | null; email: string | null
-  telefone: string | null; mensalista: boolean
+  telefone: string | null; endereco: string | null; mensalista: boolean
   observacoes: string | null; createdAt: string
   reservas: Reserva[]; comandas: Comanda[]
 }

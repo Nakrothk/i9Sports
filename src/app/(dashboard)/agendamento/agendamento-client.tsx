@@ -244,7 +244,7 @@ export function AgendamentoClient({ quadrasIniciais, reservasIniciais, aulasInic
                                 {reserva.nomeCliente}
                               </p>
                               {isRecorrente && (
-                                <RefreshCw size={9} className="text-yellow-600 dark:text-yellow-400 shrink-0" title="Mensal" />
+                                <RefreshCw size={9} className="text-yellow-600 dark:text-yellow-400 shrink-0" aria-label="Mensal" />
                               )}
                             </div>
                             {reserva.telefone && (
